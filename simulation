@@ -20,7 +20,7 @@ pygame.mixer.init()
 play_bgm()
 music_paused = False
 startPopulation_Lion = 0
-startPopulation = 300
+startPopulation = 30
 infant_mortality = 10
 Lioninfant_mortality = 10
 youth_mortality = 5
@@ -242,7 +242,7 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
                     father=males[0]
                     peopleDictionary.append(Person(0, person.x, person.y,
                                                     (person.range + father.range)/2 + random.uniform(-0.5, 0.5) * mutation,
-                                                (person.speed + father.speed/2)+random.uniform(-0.5, 0.5) * mutation,
+                                                (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
                                                 (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation))  # adding mutation to range traits
             # ax.imshow(people_image, extent=[person.x-0.1, person.x+0.1, person.y-0.1, person.y+0.1], aspect='auto')
 
