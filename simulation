@@ -65,6 +65,7 @@ class Person:
         nearby_lions = [lion for lion in LionDictionary if
                         distancesquare(self.x, self.y, lion.x, lion.y) <= self.range ** 2]
         nearby_people = self.nearby_people
+        nearby_mates = [mate for mate in self.nearby_people if self.gender != mate.gender]
         # If there are nearby lions, try to move away from them
         if nearby_lions:
             lion_x, lion_y = nearby_lions[0].x, nearby_lions[0].y
@@ -85,6 +86,18 @@ class Person:
         elif len(nearby_people) > 20:
             self.x += random.uniform(-1, 1)
             self.y += random.uniform(-1, 1)
+        elif nearby_mates:
+            mate_x, mate_y = nearby_mates[0].x, nearby_mates[0].y
+            dx = mate_x - self.x 
+            dy = mate_y - self.y
+            magnitude = (dx ** 2 + dy ** 2) ** 0.5
+            if magnitude > 0:
+                dx /= magnitude
+                dy /= magnitude
+
+            # Move towards the person by adding the direction vector
+            self.x += dx * self.speed
+            self.y += dy * self.speed
         else:
             self.x += random.uniform(-0.1, 0.1)  # People will run with speed only  when lion is near
             self.y += random.uniform(-0.1, 0.1)
@@ -176,13 +189,14 @@ def harvest():
         else:
             person.age += 1
             person.move()
-    food += ablepeople_production* rain
+    if len(peopleDictionary) < 3500:
+        food += ablepeople_production* rain
 
     if food < len(peopleDictionary):
         k=(int(len(peopleDictionary) - food))
-        del peopleDictionary[0:k]
-        # del peopleDictionary[0:int(k/2)]
-        # del peopleDictionary[int(len(peopleDictionary)-int(k/2)):]
+        # del peopleDictionary[0:k]
+        del peopleDictionary[0:int(k/2)]
+        del peopleDictionary[int(len(peopleDictionary)-int(k/2)):] 
         food = 0
     else:
         food -= len(peopleDictionary)
