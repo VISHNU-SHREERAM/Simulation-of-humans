@@ -96,8 +96,8 @@ class Person:
                 dy /= magnitude
 
             # Move towards the person by adding the direction vector
-            self.x += dx * self.speed
-            self.y += dy * self.speed
+            self.x += dx * self.speed/2
+            self.y += dy * self.speed/2
         else:
             self.x += random.uniform(-0.1, 0.1)  # People will run with speed only  when lion is near
             self.y += random.uniform(-0.1, 0.1)
@@ -189,8 +189,10 @@ def harvest():
         else:
             person.age += 1
             person.move()
-    if len(peopleDictionary) < 3500:
+    if len(peopleDictionary) < 2500:
         food += ablepeople_production* rain
+    else:
+        food += ablepeople_production* rain/2
 
     if food < len(peopleDictionary):
         k=(int(len(peopleDictionary) - food))
