@@ -50,6 +50,7 @@ class Person:
         self.agri=agri
         self.x = x
         self.y = y
+        self.pregnant=0
         if range_> 0:
             self.range = range_
         else:
@@ -96,8 +97,8 @@ class Person:
                 dy /= magnitude
 
             # Move towards the person by adding the direction vector
-            self.x += dx * self.speed/2
-            self.y += dy * self.speed/2
+            self.x += dx * 0.5
+            self.y += dy * 0.5
         else:
             self.x += random.uniform(-0.1, 0.1)  # People will run with speed only  when lion is near
             self.y += random.uniform(-0.1, 0.1)
@@ -251,11 +252,14 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
         humanaverage_age += person.age / len(peopleDictionary)
         humanaverage_speed += person.speed / len(peopleDictionary)
         humanaverage_range += person.range / len(peopleDictionary)
-        if person.gender == 1 and min_age_fertility < person.age < max_age_fertility:
+        if person.pregnant > 0:
+            person.pregnant -= 1
+        if person.gender == 1 and person.pregnant == 0 and min_age_fertility < person.age < max_age_fertility:
             males = [man for man in person.nearby_people if man.gender==0]
             if males:
                 if random.randint(0, 100) > infant_mortality:
                     father=males[0]
+                    person.pregnant=2
                     peopleDictionary.append(Person(0, person.x, person.y,
                                                     (person.range + father.range)/2 + random.uniform(-0.5, 0.5) * mutation,
                                                 (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
