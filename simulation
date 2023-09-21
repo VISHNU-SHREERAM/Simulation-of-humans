@@ -42,7 +42,6 @@ lionaverage_range = 0
 mutation = 1  # Initial value for mutation
 rain = 1  # Initial value for rain factor
 
-
 class Person:
     def __init__(self, age, x, y, range_, speed,agri):
         self.gender = random.randint(0, 1)
@@ -449,9 +448,9 @@ def update(frame):
         ax2[2].set_xlabel('Year')
         ax2[2].set_ylabel('Average Age')
         ax2[2].set_title('Average Age Comparison')
-        ax2[0].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller')
-        ax2[1].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller')
-        ax2[2].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller')
+        ax2[0].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
+        ax2[1].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
+        ax2[2].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
 
         plt.setp(ax2[0].get_legend().get_texts(), fontsize='small')  # Set legend text font size
         plt.setp(ax2[1].get_legend().get_texts(), fontsize='small')  # Set legend text font size
