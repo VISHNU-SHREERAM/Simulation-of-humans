@@ -18,11 +18,11 @@ def play_bgm():
 # Initialize pygame mixer and play the background music
 pygame.mixer.init()
 play_bgm()
-music_paused = False
+music_paused = True
 startPopulation_Lion = 0
 startPopulation = 30
 infant_mortality = 10
-Lioninfant_mortality = 10
+Lioninfant_mortality = 20
 youth_mortality = 5
 agriculture = 5
 disaster_chance = 10
@@ -50,6 +50,9 @@ class Person:
         self.x = x
         self.y = y
         self.pregnant=0
+        self.diseased=0
+        if random.randint(0,50) == 25:
+            self.diseased=1
         if range_> 0:
             self.range = range_
         else:
@@ -66,6 +69,10 @@ class Person:
                         distancesquare(self.x, self.y, lion.x, lion.y) <= self.range ** 2]
         nearby_people = self.nearby_people
         nearby_mates = [mate for mate in self.nearby_people if self.gender != mate.gender]
+        if [nearby_people_infected for nearby_people_infected in nearby_people if nearby_people_infected.diseased ==1] :
+            if random.randint(0,4)== 2 :
+                self.diseased = 1
+
         # If there are nearby lions, try to move away from them
         if nearby_lions:
             lion_x, lion_y = nearby_lions[0].x, nearby_lions[0].y
@@ -301,12 +308,12 @@ def runyear(min_age_fertility, max_age_fertility, infant_mortality, disaster_cha
     if random.randint(0, 100) < disaster_chance:
         del peopleDictionary[0:int(random.uniform(0.05, 0.2) * len(peopleDictionary))]
 
-    infant_mortality *= 0.985
+    infant_mortality *= 0.99
 
     if random.randint(0, 100) < youth_mortality:
         del peopleDictionary[0:int(random.uniform(0.05, 0.2) * len(peopleDictionary))]
 
-    youth_mortality *= 0.9
+    youth_mortality *= 0.99
     if random.randint(0, 300) == 50:
         x = random.uniform(0, 10)
         y = random.uniform(0, 10)
@@ -380,6 +387,8 @@ animation_paused = False
 # Update function for the animation
 def update(frame):
     try:
+        if frame == 1:
+            start_pause_animation()
         # if len(peopleDictionary)<=1:
         #     return
         # if len(LionDictionary) <= 2:
@@ -402,6 +411,8 @@ def update(frame):
                 infant_mortality, disaster_chance, youth_mortality, Lioninfant_mortality)
         if len(peopleDictionary) > 0:
             people_offsets = np.array([(person.x, person.y) for person in peopleDictionary])
+            colors = ['black' if person.diseased == 1 else 'blue' for person in peopleDictionary]
+            people_plot.set_color(colors)
             people_plot.set_offsets(people_offsets)
         else:
             people_plot.set_offsets(np.empty((0, 2)))  # Set empty offsets if no people
@@ -467,6 +478,11 @@ def pause_animation(event):
     global animation_paused
     animation_paused = True
     animation.event_source.stop()
+def start_pause_animation():
+    global animation_paused
+    animation_paused = True
+    animation.event_source.stop()
+
 
 
 def add_lion(event):
@@ -480,8 +496,6 @@ def play_animation(event):
     global animation_paused
     animation_paused = False
     animation.event_source.start()
-
-
 # Set button click event handlers
 pause_button.on_clicked(pause_animation)
 play_button.on_clicked(play_animation)
