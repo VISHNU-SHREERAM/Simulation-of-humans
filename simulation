@@ -7,6 +7,7 @@ from matplotlib.widgets import Button
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt2
 import pygame
+import mplcursors
 
 matplotlib.use('TkAgg')
 pygame.init()
@@ -18,6 +19,7 @@ def play_bgm():
 # Initialize pygame mixer and play the background music
 pygame.mixer.init()
 play_bgm()
+Info_value=False
 music_paused = True
 startPopulation_Lion = 0
 startPopulation = 30
@@ -41,9 +43,12 @@ humanaverage_range = 0
 lionaverage_range = 0
 mutation = 1  # Initial value for mutation
 rain = 1  # Initial value for rain factor
-
+name_collection=["Akash","Ajeya","Agni","Adarsh","Adit","Aditya","Anil","Ashok","Bala","Bodhi","Bharati","Bharat","Ayush","Devdas","Dev","Devika","Das","Indra"]
 class Person:
-    def __init__(self, age, x, y, range_, speed,agri):
+    def __init__(self, age, x, y, range_, speed,agri,name,parent,children=[]):
+        self.name=name
+        self.parent=parent
+        self.children=children
         self.gender = random.randint(0, 1)
         self.age = age
         self.agri=agri
@@ -269,10 +274,14 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
                 if random.randint(0, 100) > infant_mortality:
                     father=males[0]
                     person.pregnant=2
+                    name=name_collection[random.randint(0,len(name_collection)-1)]+" "+father.name
+                    parent=[father.name,person.name]
+                    father.children.append(name)
+                    person.children.append(name)
                     peopleDictionary.append(Person(0, person.x, person.y,
                                                     (person.range + father.range)/2 + random.uniform(-0.5, 0.5) * mutation,
                                                 (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
-                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation))  # adding mutation to range traits
+                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,name,parent))  # adding mutation to range traits
             # ax.imshow(people_image, extent=[person.x-0.1, person.x+0.1, person.y-0.1, person.y+0.1], aspect='auto')
 
     for lion in LionDictionary:
@@ -293,7 +302,8 @@ def begin_simulation():
         range_ = random.uniform(1, 3)  # Range for each person
         speed = random.uniform(0.5, 2)
         agri= random.uniform(0,3)
-        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri))
+        name=name_collection[random.randint(0,len(name_collection)-1)]
+        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,name,parent="?"))
     for j in range(startPopulation_Lion):
         x = random.uniform(0, 20)
         y = random.uniform(0, 20)
@@ -397,6 +407,9 @@ add_disease_button = Button(add_disease_button_ax, '!', color='0.9', hovercolor=
 
 play_button_ax = plt.axes([0.7, 0.05, 0.1, 0.05])
 play_button = Button(play_button_ax, 'Play', hovercolor='0.9')
+detect_button_ax = plt.axes([0.6, 0.05, 0.1, 0.05])
+detect_button = Button(detect_button_ax, 'Info', hovercolor='0.9')
+
 # Create a slider widget for mutation
 ax_mutation = plt.axes([0.1, 0.1, 0.15, 0.03])
 mutation_slider = Slider(ax_mutation, 'Mutation', valmin=0, valmax=2, valinit=mutation)
@@ -516,7 +529,8 @@ def add_lion(event):
 
 
 def add_people(event):
-    peopleDictionary.append(Person(15, random.uniform(0, 20), random.uniform(0, 20), random.uniform(1, 2), 1.5,random.uniform(1,3)))
+    name=name_collection[random.randint(0,len(name_collection)-1)]
+    peopleDictionary.append(Person(15, random.uniform(0, 20), random.uniform(0, 20), random.uniform(1, 2), 1.5,random.uniform(1,3),name,parent="?"))
 def add_disease(event):
     i=random.randint(0,len(peopleDictionary)-1)
     peopleDictionary[i].diseased=random.randint(1,10)
@@ -528,7 +542,25 @@ def play_animation(event):
     global animation_paused
     animation_paused = False
     animation.event_source.start()
+def detect(x,y):
+    people = [person for person in peopleDictionary if int(2*person.x) == int(2*x) and int(2*person.y)==int(2*y)]
+    if people:
+        person=people[0]
+        if person.gender==1:
+            gender="female"
+        else:
+            gender="male"
+        if person.parent=="?":
+            Father="?"
+            Mother="?"
+        else:
+            Father=person.parent[0]
+            Mother=person.parent[1]
+        return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
 # Set button click event handlers
+def Identify(event):
+    crs = mplcursors.cursor(ax,hover=True)
+    crs.connect("add", lambda sel: sel.annotation.set_text(detect(sel.target[0], sel.target[1])))
 pause_button.on_clicked(pause_animation)
 play_button.on_clicked(play_animation)
 add_lion_button.on_clicked(add_lion)
@@ -536,6 +568,7 @@ add_people_button.on_clicked(add_people)
 add_disease_button.on_clicked(add_disease)
 pause_button.on_clicked(pause_music)
 play_button.on_clicked(play_music)
+detect_button.on_clicked(Identify)
 # Create animation
 animation = FuncAnimation(fig, update, frames=600, interval=100, repeat=False, blit=False)
 # Add legend
