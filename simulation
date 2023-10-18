@@ -43,13 +43,29 @@ humanaverage_range = 0
 lionaverage_range = 0
 mutation = 1  # Initial value for mutation
 rain = 1  # Initial value for rain factor
-name_collection=["Akash","Ajeya","Agni","Adarsh","Adit","Aditya","Anil","Ashok","Bala","Bodhi","Bharati","Bharat","Ayush","Devdas","Dev","Devika","Das","Indra"]
+male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
+female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
+name_collection=[]
 class Person:
-    def __init__(self, age, x, y, range_, speed,agri,name,parent,children=[]):
-        self.name=name
+    def __init__(self, age, x, y, range_, speed,agri,parent,children=[]):
+        
         self.parent=parent
         self.children=children
         self.gender = random.randint(0, 1)
+        if self.gender==0:
+            if parent=="?":
+                self.name=male_names[random.randint(0,len(male_names)-1)]
+            else:
+                self.name=male_names[random.randint(0,len(male_names)-1)]+" "+(parent[0].name.split(" "))[0]
+                parent[0].children.append(self.name)
+                parent[1].children.append(self.name)
+        else:
+            if parent=="?":
+                self.name=female_names[random.randint(0,len(female_names)-1)]
+            else:
+                self.name=female_names[random.randint(0,len(female_names)-1)]+" "+(parent[0].name.split(" "))[0]
+                parent[0].children.append(self.name)
+                parent[1].children.append(self.name)
         self.age = age
         self.agri=agri
         self.x = x
@@ -274,14 +290,11 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
                 if random.randint(0, 100) > infant_mortality:
                     father=males[0]
                     person.pregnant=2
-                    name=name_collection[random.randint(0,len(name_collection)-1)]+" "+father.name
-                    parent=[father.name,person.name]
-                    father.children.append(name)
-                    person.children.append(name)
+                    parent=[father,person]
                     peopleDictionary.append(Person(0, person.x, person.y,
                                                     (person.range + father.range)/2 + random.uniform(-0.5, 0.5) * mutation,
                                                 (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
-                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,name,parent))  # adding mutation to range traits
+                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,parent))  # adding mutation to range traits
             # ax.imshow(people_image, extent=[person.x-0.1, person.x+0.1, person.y-0.1, person.y+0.1], aspect='auto')
 
     for lion in LionDictionary:
@@ -302,8 +315,7 @@ def begin_simulation():
         range_ = random.uniform(1, 3)  # Range for each person
         speed = random.uniform(0.5, 2)
         agri= random.uniform(0,3)
-        name=name_collection[random.randint(0,len(name_collection)-1)]
-        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,name,parent="?"))
+        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,parent="?"))
     for j in range(startPopulation_Lion):
         x = random.uniform(0, 20)
         y = random.uniform(0, 20)
@@ -529,8 +541,7 @@ def add_lion(event):
 
 
 def add_people(event):
-    name=name_collection[random.randint(0,len(name_collection)-1)]
-    peopleDictionary.append(Person(15, random.uniform(0, 20), random.uniform(0, 20), random.uniform(1, 2), 1.5,random.uniform(1,3),name,parent="?"))
+    peopleDictionary.append(Person(15, random.uniform(0, 20), random.uniform(0, 20), random.uniform(1, 2), 1.5,random.uniform(1,3),parent="?"))
 def add_disease(event):
     i=random.randint(0,len(peopleDictionary)-1)
     peopleDictionary[i].diseased=random.randint(1,10)
@@ -554,8 +565,8 @@ def detect(x,y):
             Father="?"
             Mother="?"
         else:
-            Father=person.parent[0]
-            Mother=person.parent[1]
+            Father=person.parent[0].name
+            Mother=person.parent[1].name
         return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
 # Set button click event handlers
 def Identify(event):
