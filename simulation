@@ -19,6 +19,7 @@ def play_bgm():
 # Initialize pygame mixer and play the background music
 pygame.mixer.init()
 play_bgm()
+pygame.mixer.music.pause()
 Info_value=False
 music_paused = True
 startPopulation_Lion = 0
@@ -90,9 +91,10 @@ class Person:
                         distancesquare(self.x, self.y, lion.x, lion.y) <= self.range ** 2]
         nearby_people = self.nearby_people
         nearby_mates = [mate for mate in self.nearby_people if self.gender != mate.gender]
+        nearby_people_infected=[people for people in nearby_people if people.diseased >0]
         if [nearby_people_infected for nearby_people_infected in nearby_people if nearby_people_infected.diseased >0] :
             if random.randint(0,4)== 2 :
-                self.diseased = 1
+                self.diseased = nearby_people_infected[0].diseased
 
         # If there are nearby lions, try to move away from them
         if nearby_lions:
@@ -432,7 +434,7 @@ rain_slider = Slider(ax_rain, 'Rain', valmin=0, valmax=2.5, valinit=rain)
 rain_slider.on_changed(update_rain)
 
 # Flag to control animation state
-animation_paused = False
+animation_paused = True
 
 
 # Update function for the animation
@@ -462,7 +464,7 @@ def update(frame):
                 infant_mortality, disaster_chance, youth_mortality, Lioninfant_mortality)
         if len(peopleDictionary) > 0:
             people_offsets = np.array([(person.x, person.y) for person in peopleDictionary])
-            colors = ['black' if person.diseased == 1 else 'blue' for person in peopleDictionary]
+            colors = ['black' if person.diseased > 0  else 'blue' for person in peopleDictionary]
             people_plot.set_color(colors)
             people_plot.set_offsets(people_offsets)
         else:
@@ -554,6 +556,8 @@ def play_animation(event):
     animation_paused = False
     animation.event_source.start()
 def detect(x,y):
+    if animation_paused==False:
+        return None
     people = [person for person in peopleDictionary if int(2*person.x) == int(2*x) and int(2*person.y)==int(2*y)]
     if people:
         person=people[0]
@@ -567,7 +571,10 @@ def detect(x,y):
         else:
             Father=person.parent[0].name
             Mother=person.parent[1].name
-        return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
+        if person.diseased>0:
+            return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}\nDisease_str={person.diseased}'
+        else:
+            return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
 # Set button click event handlers
 def Identify(event):
     crs = mplcursors.cursor(ax,hover=True)
