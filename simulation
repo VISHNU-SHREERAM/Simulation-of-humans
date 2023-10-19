@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt2
 import pygame
 import mplcursors
 
+
+# ADD CURE AND IMMUNITY 
+
 matplotlib.use('TkAgg')
 pygame.init()
 
@@ -212,13 +215,13 @@ def harvest():
     ablepeople_production = 0
     # to reduce the for loop we are giving these functions inside this folder
     for person in peopleDictionary:
-        if person.diseased>0:
-            if random.randint(0,(10-person.diseased))==0:
-                peopleDictionary.remove(person)
         if person.age > 8:
             ablepeople_production+=person.agri
         if person.age > 80:
             peopleDictionary.remove(person)
+        elif person.diseased>0:
+            if random.randint(0,(12-person.diseased))==0:
+                peopleDictionary.remove(person)
         else:
             person.age += 1
             person.move()
