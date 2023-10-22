@@ -49,10 +49,8 @@ mutation = 1  # Initial value for mutation
 rain = 1  # Initial value for rain factor
 male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
 female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
-name_collection=[]
 class Person:
     def __init__(self, age, x, y, range_, speed,agri,parent,children=[]):
-        
         self.parent=parent
         self.children=children
         self.gender = random.randint(0, 1)
@@ -92,6 +90,8 @@ class Person:
         # Check if there are any lions within the range
         nearby_lions = [lion for lion in LionDictionary if
                         distancesquare(self.x, self.y, lion.x, lion.y) <= self.range ** 2]
+        self.nearby_people=[person for person in peopleDictionary if self != person and distancesquare(self.x, self.y, person.x, person.y) <= self.range ** 2]
+        self.nearby_people.sort(key=lambda person: distancesquare(self.x, self.y, person.x, person.y))
         nearby_people = self.nearby_people
         nearby_mates = [mate for mate in self.nearby_people if self.gender != mate.gender]
         nearby_people_infected=[people for people in nearby_people if people.diseased >0]
@@ -559,25 +559,28 @@ def play_animation(event):
     animation_paused = False
     animation.event_source.start()
 def detect(x,y):
-    if animation_paused==False:
-        return None
-    people = [person for person in peopleDictionary if int(2*person.x) == int(2*x) and int(2*person.y)==int(2*y)]
-    if people:
-        person=people[0]
-        if person.gender==1:
-            gender="female"
+    if animation_paused==True:
+        people = [person for person in peopleDictionary if int(2*person.x) == int(2*x) and int(2*person.y)==int(2*y)]
+        if people:
+            person=people[0]
+            if person.gender==1:
+                gender="female"
+            else:
+                gender="male"
+            if person.parent=="?":
+                Father="?"
+                Mother="?"
+            else:
+                Father=person.parent[0].name
+                Mother=person.parent[1].name
+            if person.diseased>0:
+                return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}\nDisease_str={person.diseased}'
+            else:
+                return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
         else:
-            gender="male"
-        if person.parent=="?":
-            Father="?"
-            Mother="?"
-        else:
-            Father=person.parent[0].name
-            Mother=person.parent[1].name
-        if person.diseased>0:
-            return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}\nDisease_str={person.diseased}'
-        else:
-            return f'{person.name} ,{gender}\n Father={Father} Mother={Mother}\nAge = {person.age}'
+            return "point to a human"
+    else:
+        return ""
 # Set button click event handlers
 def Identify(event):
     crs = mplcursors.cursor(ax,hover=True)
