@@ -86,6 +86,16 @@ class Person:
             self.speed = 0
         self.nearby_people = [person for person in peopleDictionary if self != person and distancesquare(self.x, self.y, person.x, person.y) <= self.range ** 2]
         self.nearby_people.sort(key=lambda person: distancesquare(self.x, self.y, person.x, person.y))
+    def is_sibling(self,person):
+        if self.parent==person.parent and self.parent!='?':
+            return True
+        else:
+            return False
+    def not_related(self,person):
+        if self.parent[0]==person or self.parent[1]==person or self==person.parent[0] or self == person.parent[1] :
+            return False
+        else:
+            return True
     def move(self):
         # Check if there are any lions within the range
         nearby_lions = [lion for lion in LionDictionary if
@@ -127,10 +137,13 @@ class Person:
             if magnitude > 0:
                 dx /= magnitude
                 dy /= magnitude
-
+                self.x += dx * 0.5
+                self.y += dy * 0.5
+            if magnitude==0:
+                self.x += random.uniform(-0.1, 0.1)
+                self.y += random.uniform(-0.1, 0.1)
             # Move towards the person by adding the direction vector
-            self.x += dx * 0.5
-            self.y += dy * 0.5
+            
         else:
             self.x += random.uniform(-0.1, 0.1)  # People will run with speed only  when lion is near
             self.y += random.uniform(-0.1, 0.1)
@@ -290,7 +303,7 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
         if person.pregnant > 0:
             person.pregnant -= 1
         if person.gender == 1 and person.pregnant == 0 and min_age_fertility < person.age < max_age_fertility:
-            males = [man for man in person.nearby_people if man.gender==0]
+            males = [man for man in person.nearby_people if (man.gender==0 and man.age>18 and man.is_sibling(person)==False and man.not_related(person)==True)]
             if males:
                 if random.randint(0, 100) > infant_mortality:
                     father=males[0]
