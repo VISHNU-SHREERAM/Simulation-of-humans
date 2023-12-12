@@ -26,15 +26,15 @@ pygame.mixer.music.pause()
 Info_value=False
 music_paused = True
 startPopulation_Lion = 0
-startPopulation = 50
+startPopulation = 100
 infant_mortality = 10
 Lioninfant_mortality = 20
 youth_mortality = 5
 agriculture = 5
 disaster_chance = 5
 min_age_fertility = 18
-max_age_fertility = 40
-food = 1
+max_age_fertility = 60
+food = 1000
 peopleDictionary = []
 LionDictionary = []
 area = 100
@@ -54,6 +54,7 @@ class Person:
         self.parent=parent
         self.children=children
         self.gender = random.randint(0, 1)
+        self.immunity=random.randint(0,10)
         if self.gender==0:
             if parent=="?":
                 self.name=male_names[random.randint(0,len(male_names)-1)]
@@ -74,8 +75,8 @@ class Person:
         self.y = y
         self.pregnant=0
         self.diseased=0
-        if random.randint(0,300) == 25:
-            self.diseased=random.randint(1,10)
+        # if random.randint(0,300) == 25:
+        #     self.diseased=random.randint(1,10)
         if range_> 0:
             self.range = range_
         else:
@@ -87,13 +88,18 @@ class Person:
         self.nearby_people = [person for person in peopleDictionary if self != person and distancesquare(self.x, self.y, person.x, person.y) <= self.range ** 2]
         self.nearby_people.sort(key=lambda person: distancesquare(self.x, self.y, person.x, person.y))
     def is_sibling(self,person):
-        if self.parent==person.parent and self.parent!='?':
+        if self.parent!='?' and person.parent!="?" and self.parent==person.parent:
             return True
         else:
             return False
     def not_related(self,person):
-        if self.parent[0]==person or self.parent[1]==person or self==person.parent[0] or self == person.parent[1] :
-            return False
+        if self.parent!="?":
+            if self.parent[0]==person or self.parent[1]==person or self.is_sibling(person):
+                return False
+            elif person.parent!="?" and (self == person.parent[0] or self == person.parent[1]):
+                return False
+            else:
+                return True
         else:
             return True
     def move(self):
@@ -103,7 +109,7 @@ class Person:
         self.nearby_people=[person for person in peopleDictionary if self != person and distancesquare(self.x, self.y, person.x, person.y) <= self.range ** 2]
         self.nearby_people.sort(key=lambda person: distancesquare(self.x, self.y, person.x, person.y))
         nearby_people = self.nearby_people
-        nearby_mates = [mate for mate in self.nearby_people if self.gender != mate.gender]
+        nearby_mates = [mate for mate in self.nearby_people if (self.gender != mate.gender and mate.is_sibling(self)==False and mate.not_related(self)==True)]
         nearby_people_infected=[people for people in nearby_people if people.diseased >0]
         if [nearby_people_infected for nearby_people_infected in nearby_people if nearby_people_infected.diseased >0] :
             if random.randint(0,4)== 2 :
@@ -145,8 +151,8 @@ class Person:
             # Move towards the person by adding the direction vector
             
         else:
-            self.x += random.uniform(-0.1, 0.1)  # People will run with speed only  when lion is near
-            self.y += random.uniform(-0.1, 0.1)
+            self.x += random.uniform(-1, 1)  # People will run with speed only  when lion is near
+            self.y += random.uniform(-1, 1)
 
         # Ensure the person stays within the boundaries
         self.x = max(0, min(20, self.x))
@@ -230,11 +236,15 @@ def harvest():
     for person in peopleDictionary:
         if person.age > 8:
             ablepeople_production+=person.agri
-        if person.age > 80:
+        if person.age > 150:
             peopleDictionary.remove(person)
         elif person.diseased>0:
+            if random.randint(0,1)==1 and ((person.immunity - person.diseased)>=0):
+                person.diseased=0
             if random.randint(0,(12-person.diseased))==0:
                 peopleDictionary.remove(person)
+            else:
+                person.move()
         else:
             person.age += 1
             person.move()
@@ -330,7 +340,7 @@ def begin_simulation():
     for i in range(startPopulation):
         x = random.uniform(0, 20)
         y = random.uniform(0, 20)
-        range_ = random.uniform(1, 3)  # Range for each person
+        range_ = random.uniform(1, 5)  # Range for each person
         speed = random.uniform(0.5, 3)
         agri= random.uniform(0,3)
         peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,parent="?"))
@@ -437,7 +447,7 @@ add_disease_button = Button(add_disease_button_ax, '!', color='0.9', hovercolor=
 
 play_button_ax = plt.axes([0.7, 0.05, 0.1, 0.05])
 play_button = Button(play_button_ax, 'Play', hovercolor='0.9')
-detect_button_ax = plt.axes([0.6, 0.05, 0.1, 0.05])
+detect_button_ax = plt.axes([0.65, 0.01, 0.05, 0.05])
 detect_button = Button(detect_button_ax, 'Info', hovercolor='0.9')
 
 # Create a slider widget for mutation
@@ -472,7 +482,7 @@ def update(frame):
         global food
         if animation_paused:
             return
-        # Calculate the current year based on the frame number
+        # Calculate the current year based on the frame number 
         year += 1
 
         # Run simulation for one year
@@ -480,7 +490,14 @@ def update(frame):
                 infant_mortality, disaster_chance, youth_mortality, Lioninfant_mortality)
         if len(peopleDictionary) > 0:
             people_offsets = np.array([(person.x, person.y) for person in peopleDictionary])
-            colors = ['black' if person.diseased > 0  else 'blue' for person in peopleDictionary]
+            colors=[]
+            for person in peopleDictionary:
+                if person.diseased > 0:
+                    colors.append('black')
+                elif person.gender==1:
+                    colors.append('pink')
+                else:
+                    colors.append('blue')
             people_plot.set_color(colors)
             people_plot.set_offsets(people_offsets)
         else:
