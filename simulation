@@ -31,7 +31,7 @@ infant_mortality = 10
 Lioninfant_mortality = 20
 youth_mortality = 5
 agriculture = 5
-disaster_chance = 5
+disaster_chance = 10
 min_age_fertility = 18
 max_age_fertility = 60
 food = 1000
@@ -50,11 +50,11 @@ rain = 1  # Initial value for rain factor
 male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
 female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
 class Person:
-    def __init__(self, age, x, y, range_, speed,agri,parent,children=[]):
+    def __init__(self, age, x, y, range_, speed,agri,parent,immune,children=[]):
         self.parent=parent
         self.children=children
         self.gender = random.randint(0, 1)
-        self.immunity=random.randint(0,10)
+        self.immunity=immune
         if self.gender==0:
             if parent=="?":
                 self.name=male_names[random.randint(0,len(male_names)-1)]
@@ -317,12 +317,13 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
             if males:
                 if random.randint(0, 100) > infant_mortality:
                     father=males[0]
-                    person.pregnant=2
+                    person.pregnant=10
                     parent=[father,person]
+                    immune=(person.immunity+father.immunity)/2+random.uniform(-1,1)*mutation
                     peopleDictionary.append(Person(0, person.x, person.y,
                                                     (person.range + father.range)/2 + random.uniform(-0.5, 0.5) * mutation,
                                                 (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
-                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,parent))  # adding mutation to range traits
+                                                (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,parent,immune))  # adding mutation to range traits
             # ax.imshow(people_image, extent=[person.x-0.1, person.x+0.1, person.y-0.1, person.y+0.1], aspect='auto')
 
     for lion in LionDictionary:
@@ -343,7 +344,7 @@ def begin_simulation():
         range_ = random.uniform(1, 5)  # Range for each person
         speed = random.uniform(0.5, 3)
         agri= random.uniform(0,3)
-        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,parent="?"))
+        peopleDictionary.append(Person(random.randint(18, 50), x, y, range_, speed,agri,parent="?",immune=random.randint(0,10)))
     for j in range(startPopulation_Lion):
         x = random.uniform(0, 20)
         y = random.uniform(0, 20)
