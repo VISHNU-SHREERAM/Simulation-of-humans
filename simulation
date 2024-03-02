@@ -8,11 +8,12 @@ from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt2
 import pygame
 import mplcursors
-
-
-# ADD CURE AND IMMUNITY 
-
 matplotlib.use('TkAgg')
+
+from main_simulation import main_f
+
+startPopulation_Lion,startPopulation,infant_mortality,Lioninfant_mortality,youth_mortality,agriculture,disaster_chance,min_age_fertility,max_age_fertility,food,mutation,rain=main_f()
+# ADD CURE AND IMMUNITY 
 pygame.init()
 
 # Function to play background music
@@ -25,16 +26,6 @@ play_bgm()
 pygame.mixer.music.pause()
 Info_value=False
 music_paused = True
-startPopulation_Lion = 0
-startPopulation = 100
-infant_mortality = 10
-Lioninfant_mortality = 20
-youth_mortality = 5
-agriculture = 5
-disaster_chance = 10
-min_age_fertility = 18
-max_age_fertility = 60
-food = 1000
 peopleDictionary = []
 LionDictionary = []
 area = 100
@@ -45,8 +36,6 @@ humanaverage_speed = 0
 lionaverage_speed = 0
 humanaverage_range = 0
 lionaverage_range = 0
-mutation = 1  # Initial value for mutation
-rain = 1  # Initial value for rain factor
 male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
 female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
 class Person:
@@ -408,7 +397,7 @@ def update_rain(val):
 begin_simulation()
 fig, ax2 = plt2.subplots(3, sharex=True, sharey=False)
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots() 
 
 # Set the limits of the plot in the XY plane
 ax.set_xlim(-1, 21)
