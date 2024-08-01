@@ -40,6 +40,7 @@ humanaverage_range = 0
 lionaverage_range = 0
 male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
 female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
+show_gender_var=True
 class Person:
     def __init__(self, age, x, y, range_, speed,agri,parent,immune,children=[]):
         self.parent=parent
@@ -232,6 +233,8 @@ def harvest():
         elif person.diseased>0:
             if random.randint(0,1)==1 and ((person.immunity - person.diseased)>=0):
                 person.diseased=0
+                person.age += 1
+                person.move()
             if random.randint(0,(12-person.diseased))==0:
                 peopleDictionary.remove(person)
             else:
@@ -442,6 +445,9 @@ play_button = Button(play_button_ax, 'Play', hovercolor='0.9')
 detect_button_ax = plt.axes([0.65, 0.01, 0.05, 0.05])
 detect_button = Button(detect_button_ax, 'Info', hovercolor='0.9')
 
+show_gender_button_ax = plt.axes([0.60, 0.01, 0.05, 0.05])
+gender_button = Button(show_gender_button_ax, 'gender', hovercolor='0.9')
+
 # Create a slider widget for mutation
 ax_mutation = plt.axes([0.1, 0.1, 0.15, 0.03])
 mutation_slider = Slider(ax_mutation, 'Mutation', valmin=0, valmax=2, valinit=mutation)
@@ -486,8 +492,11 @@ def update(frame):
             for person in peopleDictionary:
                 if person.diseased > 0:
                     colors.append('black')
-                elif person.gender==1:
-                    colors.append('pink')
+                elif show_gender_var:
+                    if person.gender==1:
+                        colors.append('pink')
+                    else:
+                        colors.append('blue')
                 else:
                     colors.append('blue')
             people_plot.set_color(colors)
@@ -607,6 +616,9 @@ def detect(x,y):
 def Identify(event):
     crs = mplcursors.cursor(ax,hover=True)
     crs.connect("add", lambda sel: sel.annotation.set_text(detect(sel.target[0], sel.target[1])))
+def show_gender(event):
+    global show_gender_var
+    show_gender_var=not(show_gender_var)
 pause_button.on_clicked(pause_animation)
 play_button.on_clicked(play_animation)
 add_lion_button.on_clicked(add_lion)
@@ -615,6 +627,7 @@ add_disease_button.on_clicked(add_disease)
 pause_button.on_clicked(pause_music)
 play_button.on_clicked(play_music)
 detect_button.on_clicked(Identify)
+gender_button.on_clicked(show_gender)
 # Create animation
 animation = FuncAnimation(fig, update, frames=2000, interval=100, repeat=False, blit=False)
 # Add legend
