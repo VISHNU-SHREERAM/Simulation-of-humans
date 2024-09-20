@@ -38,6 +38,7 @@ humanaverage_speed = 0
 lionaverage_speed = 0
 humanaverage_range = 0
 lionaverage_range = 0
+human_immunity_average=0
 male_names=["Akash","Ajeya","Agni","Harsh","Sameer","Parth","Dhruv","Adarsh","Adit","Aditya","Vikram","Anil","Ashok","Bodhi","Bharati","Ayush","Devdas","Dev","Das","Ram","Rahul","Akshay","Pranav"]
 female_names=["Pooja","Devika","Aishwarya","Ananya","Divya","Renuka","Rekha","Meera","Shruti","Nandini","Geeta","Anjali","Shreya","Tara","Vani","Kavita"]
 show_gender_var=True
@@ -92,9 +93,12 @@ class Person:
                 return False
             else:
                 return True
+        elif person.parent!="?" and (self == person.parent[0] or self == person.parent[1]):
+            return False
         else:
             return True
     def move(self):
+        # global background_image_copy
         # Check if there are any lions within the range
         nearby_lions = [lion for lion in LionDictionary if
                         distancesquare(self.x, self.y, lion.x, lion.y) <= self.range ** 2]
@@ -106,6 +110,9 @@ class Person:
         if [nearby_people_infected for nearby_people_infected in nearby_people if nearby_people_infected.diseased >0] :
             if random.randint(0,4)== 2 :
                 self.diseased = nearby_people_infected[0].diseased
+        '''Code to change the underlying image'''
+        # x_co,y_co=plot_to_image_coords(self.x,self.y)
+        # background_image_copy[y_co][x_co]=[0,0,0]
 
         # If there are nearby lions, try to move away from them
         if nearby_lions:
@@ -231,12 +238,20 @@ def harvest():
         if person.age > 150:
             peopleDictionary.remove(person)
         elif person.diseased>0:
-            if random.randint(0,1)==1 and ((person.immunity - person.diseased)>=0):
-                person.diseased=0
+            # If the person has more immunity than the disease, there's some % chance that the person's immunity increases
+            if (person.immunity - person.diseased)>=0:
+                if random.randint(0,1+(person.diseased//3))==0:
+                    person.immunity+=person.diseased/15
+                    person.diseased=0
                 person.age += 1
                 person.move()
-            if random.randint(0,(12-person.diseased))==0:
+            elif random.randint(0,(12-person.diseased))==0:
                 peopleDictionary.remove(person)
+            # elif random.randint(0,500)==50:
+            #     person.immunity=person.diseased
+            #     person.diseased=0
+            #     person.age += 1
+            #     person.move()
             else:
                 person.move()
         else:
@@ -294,16 +309,21 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
     global humanaverage_range
     global lionaverage_range
     global mutation
+    global human_immunity_average
+    
+    human_immunity_average=0
     humanaverage_age = 0
     lionaverage_age = 0
     humanaverage_speed = 0
     lionaverage_speed = 0
     humanaverage_range = 0
     lionaverage_range = 0
+    total_population=len(peopleDictionary)
     for person in peopleDictionary:
-        humanaverage_age += person.age / len(peopleDictionary)
-        humanaverage_speed += person.speed / len(peopleDictionary)
-        humanaverage_range += person.range / len(peopleDictionary)
+        humanaverage_age += person.age 
+        humanaverage_speed += person.speed 
+        humanaverage_range += person.range 
+        human_immunity_average+= person.immunity
         if person.pregnant > 0:
             person.pregnant -= 1
         if person.gender == 1 and person.pregnant == 0 and min_age_fertility < person.age < max_age_fertility:
@@ -319,7 +339,10 @@ def reproduce(min_age_fertility, max_age_fertility, infant_mortality, Lioninfant
                                                 (person.speed + father.speed)/2+random.uniform(-0.5, 0.5) * mutation,
                                                 (person.agri + father.agri)/2 +random.uniform(-0.5, 0.5) * mutation,parent,immune))  # adding mutation to range traits
             # ax.imshow(people_image, extent=[person.x-0.1, person.x+0.1, person.y-0.1, person.y+0.1], aspect='auto')
-
+    humanaverage_age/=total_population
+    humanaverage_speed/=total_population
+    humanaverage_range/=total_population
+    human_immunity_average/=total_population
     for lion in LionDictionary:
         lionaverage_age += lion.age / len(LionDictionary)
         lionaverage_speed += lion.speed / len(LionDictionary)
@@ -375,7 +398,6 @@ def runyear(year,min_age_fertility, max_age_fertility, infant_mortality, disaste
 
 
 
-
     infant_mortality *= 0.99
 
     if random.randint(0, 100) < youth_mortality:
@@ -389,7 +411,10 @@ def runyear(year,min_age_fertility, max_age_fertility, infant_mortality, disaste
         LionDictionary.append(Lion(5, 2, x, y, random.uniform(1, 3), 1))  # Add lion with random range
         LionDictionary.append(Lion(5, 2, x, y, random.uniform(1, 3), 1.5))  # Add lion with random range
         LionDictionary.append(Lion(5, 2, x, y, random.uniform(1, 3), 1))  # Add lion with random range
-
+            
+            
+    '''Code to change the underlying image'''
+    # ax.imshow(background_image_copy, extent=[-2, 22, -2, 22]) 
 
 def update_mutation(val):
     global mutation
@@ -400,7 +425,7 @@ def update_rain(val):
     global rain
     rain = val
 begin_simulation()
-fig, ax2 = plt2.subplots(3, sharex=True, sharey=False)
+fig, ax2 = plt2.subplots(4, sharex=True, sharey=False)
 
 fig, ax = plt.subplots() 
 
@@ -408,7 +433,22 @@ fig, ax = plt.subplots()
 ax.set_xlim(-1, 21)
 ax.set_ylim(-1, 21)
 background_image = plt.imread("background_land.jpg")
+'''Code to change the underlying image'''
+# background_image_copy = np.copy(background_image)
+
 ax.imshow(background_image, extent=[-2, 22, -2, 22]) 
+
+img_height, img_width, _ = background_image.shape
+
+# Define the extent of the image in the plot
+extent = [-2, 22, -2, 22]
+
+# Convert plot coordinates to image coordinates
+def plot_to_image_coords(x, y, extent=[-2, 22, -2, 22], img_width=img_width, img_height=img_height):
+    x_img = int((x - extent[0]) / (extent[1] - extent[0]) * img_width)
+    y_img = int((extent[3] - y) / (extent[3] - extent[2]) * img_height)
+    return x_img, y_img
+
 population_sizes = []
 population_sizesLions = []
 lionavg_skill = []
@@ -418,6 +458,7 @@ human_average_speed = []
 lion_average_speed = []
 human_average_range = []
 lion_average_range = []
+human_immunity_list=[]
 # lion_image = plt.imread('lion.jpg')
 # people_image = plt.imread('human.jpg')
 
@@ -478,6 +519,7 @@ def update(frame):
         global humanaverage_range
         global lionaverage_range
         global food
+        global human_immunity_average
         if animation_paused:
             return
         # Calculate the current year based on the frame number 
@@ -524,6 +566,8 @@ def update(frame):
         human_average_range.append(humanaverage_range)
         lion_average_speed.append(lionaverage_speed)
         lion_average_range.append(lionaverage_range)
+        human_immunity_list.append(human_immunity_average)
+
         ax2[0].clear()
         ax2[0].plot(range(year), population_sizes, color='blue', label='Humans Population')
         ax2[0].plot(range(year), population_sizesLions, color='red', label='Lions Population')
@@ -533,12 +577,16 @@ def update(frame):
         ax2[1].plot(range(year), human_average_range, color='purple', label='Humans avg range')
         ax2[1].plot(range(year), lion_average_speed, color='orange', label='lions avg speed')
         ax2[1].plot(range(year), lion_average_range, color='yellow', label='lions avg range')
-        # ax2[1].plot(range(year), lionavg_skill , color='red', label='Lions average Skill')
         ax2[1].legend()
         ax2[2].clear()
         ax2[2].plot(range(year), human_average_age, color='blue', label='Humans average age')
         ax2[2].plot(range(year), lion_average_age, color='red', label='Lions average age')
         ax2[2].legend()
+        ax2[3].clear()
+        ax2[3].plot(range(year), human_immunity_list, color='blue', label='Avg Immunity')
+        ax2[3].legend()
+
+
         ax2[0].set_ylabel('Population')
         ax2[0].set_title('Population Comparison')
         ax2[1].set_ylabel('Speed and Range')
@@ -546,9 +594,15 @@ def update(frame):
         ax2[2].set_xlabel('Year')
         ax2[2].set_ylabel('Average Age')
         ax2[2].set_title('Average Age Comparison')
+        ax2[3].set_xlabel('Year')
+        ax2[3].set_ylabel('Immunity level')
+        ax2[3].set_title('Humans Avg Immunity')
+
+    
         ax2[0].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
         ax2[1].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
         ax2[2].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
+        ax2[3].legend(loc='upper left', bbox_to_anchor=(0, 1), fontsize='smaller',framealpha=0.1)
 
         plt.setp(ax2[0].get_legend().get_texts(), fontsize='small')  # Set legend text font size
         plt.setp(ax2[1].get_legend().get_texts(), fontsize='small')  # Set legend text font size
